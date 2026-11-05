@@ -1,0 +1,1676 @@
+<!DOCTYPE html><html class="h-full bg-slate-50" lang="th"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>MyMed Home - ระบบตู้ยาประจำบ้านอัจฉริยะ (Responsive ทุกอุปกรณ์)</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Prompt:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#10b981", 600: "#059669", 700: "#047857", 800: "#065f46", container: "#d1fae5", dark: "#00422b" },
+            secondary: { DEFAULT: "#006591", container: "#e0f2fe" },
+            surface: "#f8f9ff"
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "Prompt", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    .material-symbols-outlined { font-size: 20px; line-height: 1; vertical-align: middle; display: inline-block; }
+    .view-pane { display: none; }
+    .view-pane.active { display: block; animation: fadeIn 0.16s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="h-full text-slate-800 bg-[#f8f9fc] font-sans antialiased flex flex-col overflow-hidden select-none sm:select-auto">
+<!-- TOP HEADER -->
+<header class="w-full bg-white border-b border-slate-200 z-30 shrink-0 shadow-2xs">
+<div class="flex justify-between items-center px-3.5 md:px-6 max-w-7xl mx-auto h-16 gap-2">
+<!-- Brand & Mobile Toggle -->
+<div class="flex items-center gap-2.5">
+<button aria-label="Open Menu" class="p-2 -ml-1 text-slate-600 hover:text-emerald-700 hover:bg-slate-100 rounded-xl md:hidden transition flex items-center justify-center" onclick="toggleMobileDrawer(true)">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<div class="flex items-center gap-2.5 cursor-pointer" onclick="switchTab('dashboard')">
+<div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm shrink-0"><svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M4 8h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8zm6-5h4a2 2 0 0 1 2 2v1h-8V5a2 2 0 0 1 2-2zm-3 3h10V5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v1zm4 5v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2z"></path></svg></div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="text-lg sm:text-xl font-bold tracking-tight text-emerald-900 leading-none">MyMed Home</span>
+<span class="hidden sm:inline-block text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200">ตู้ยาประจำบ้าน</span>
+</div>
+<p class="text-[10px] text-slate-400 font-medium sm:hidden">ระบบตู้ยาปลอดภัย</p>
+</div>
+</div>
+</div>
+<!-- Quick Search Bar (Tablet/Desktop) -->
+<div class="hidden md:flex items-center flex-1 max-w-md mx-4 lg:mx-8">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 hover:bg-slate-50 focus:bg-white text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" id="topSearch" oninput="handleTopSearch(this.value)" placeholder="ค้นหายา, สรรพคุณ (เช่น แก้ปวด, ลดกรด, เบาหวาน)..." type="text">
+</div>
+</div>
+<!-- Header Right: Status, Notif, Profile Dropdown -->
+<div class="flex items-center gap-2 sm:gap-3">
+<div class="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800 shadow-2xs">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="" id="hdrStatusPill">ตู้ยาหลัก: ปลอดภัยดี</span>
+</div>
+<button class="relative p-2 text-slate-600 hover:text-emerald-700 hover:bg-slate-100 rounded-xl transition" onclick="switchTab('notifications')" title="การแจ้งเตือน">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center" id="notifBadge">2</span>
+</button>
+<!-- User Profile Dropdown Button -->
+<div class="relative">
+<button class="flex items-center gap-2 p-1 pl-1.5 sm:p-1.5 sm:pl-2 rounded-full border border-slate-200 hover:bg-slate-50 hover:border-emerald-300 transition" id="userMenuBtn" onclick="toggleUserDropdown(event)">
+<div class="w-8 h-8 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center overflow-hidden shrink-0 shadow-2xs" id="hdrAvatar">
+<span class="" id="hdrInitials">สก</span>
+</div>
+<span class="text-xs font-semibold text-slate-800 hidden sm:inline max-w-[90px] truncate" id="hdrName">สมชาย ส.</span>
+<span class="material-symbols-outlined text-slate-400 text-base">expand_more</span>
+</button>
+<!-- Dropdown Menu -->
+<div class="hidden absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50" id="userDropdown">
+<div class="px-4 py-3 border-b border-slate-100 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-emerald-700 text-white font-bold text-sm flex items-center justify-center overflow-hidden shrink-0 shadow-2xs" id="ddAvatar">
+<span class="">สก</span>
+</div>
+<div class="overflow-hidden">
+<p class="text-sm font-bold text-slate-900 truncate" id="ddFullName">คุณสมชาย สุขวัฒน์</p>
+<p class="text-xs text-slate-500 truncate" id="ddEmail">somchai@homemed.th</p>
+</div>
+</div>
+<div class="py-1 text-sm">
+<button class="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-left transition" onclick="switchTab('profile'); closeDropdown();">
+<span class="material-symbols-outlined text-emerald-600 text-lg">person</span>
+<span class="">ดูหน้าโปรไฟล์ &amp; สมาชิก</span>
+</button>
+<button class="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 text-slate-700 text-left transition" onclick="switchTab('profile'); closeDropdown();">
+<span class="material-symbols-outlined text-blue-600 text-lg">edit</span>
+<span class="">แก้ไขข้อมูลส่วนตัว</span>
+</button>
+<button class="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 text-slate-700 text-left transition" onclick="openAvatarModal(); closeDropdown();">
+<span class="material-symbols-outlined text-amber-600 text-lg">photo_camera</span>
+<span class="">เปลี่ยนรูปโปรไฟล์</span>
+</button>
+<button class="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 text-slate-700 text-left transition" onclick="openMemberModal(); closeDropdown();">
+<span class="material-symbols-outlined text-purple-600 text-lg">group</span>
+<span class="">จัดการสมาชิก &amp; ประวัติแพ้ยา</span>
+</button>
+</div>
+<div class="border-t border-slate-100 pt-1">
+<button class="w-full flex items-center gap-2.5 px-4 py-2 text-red-600 hover:bg-red-50 text-left text-sm font-medium transition" onclick="openLogoutModal(); closeDropdown();">
+<span class="material-symbols-outlined text-lg">logout</span>
+<span class="">ออกจากระบบ</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- MOBILE SLIDE-IN DRAWER -->
+<div class="fixed inset-0 bg-slate-900/60 z-40 md:hidden transition-opacity duration-300 opacity-0 pointer-events-none" id="mobileDrawerBackdrop" onclick="toggleMobileDrawer(false)"></div>
+<aside class="fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-white z-50 md:hidden shadow-2xl flex flex-col justify-between transform -translate-x-full transition-transform duration-300 ease-out" id="mobileDrawer">
+<div class="p-5 space-y-5 overflow-y-auto">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-sm shrink-0"><svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M4 8h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8zm6-5h4a2 2 0 0 1 2 2v1h-8V5a2 2 0 0 1 2-2zm-3 3h10V5a1 1 0 0 0-1-1h-8a1 1 0 0 0-1 1v1zm4 5v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2z"></path></svg></div>
+<div>
+<span class="font-bold text-slate-900 text-base">MyMed Home</span>
+<span class="block text-[10px] text-emerald-700 font-semibold">ตู้ยาประจำบ้านอัจฉริยะ</span>
+</div>
+</div>
+<button class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100" onclick="toggleMobileDrawer(false)">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<button class="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-sm transition active:scale-98" onclick="switchTab('addmedicine'); toggleMobileDrawer(false);">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="">+ บันทึกยาใหม่</span>
+</button>
+<nav class="space-y-1 text-sm font-medium">
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-emerald-50 text-emerald-800 font-bold transition" id="m-nav-dashboard" onclick="switchTab('dashboard'); toggleMobileDrawer(false);">
+<div class="flex items-center gap-3"><span class="material-symbols-outlined">dashboard</span><span class="">หน้าหลัก</span></div>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="m-nav-cabinet" onclick="switchTab('cabinet'); toggleMobileDrawer(false);">
+<div class="flex items-center gap-3"><span class="material-symbols-outlined">medication</span><span class="">ตู้ยาของฉัน</span></div>
+<span class="mCabinetCount text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold">8</span>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="m-nav-addmedicine" onclick="switchTab('addmedicine'); toggleMobileDrawer(false);">
+<div class="flex items-center gap-3"><span class="material-symbols-outlined">add_circle</span><span class="">บันทึกยาใหม่</span></div>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">OCR</span>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="m-nav-expiration" onclick="switchTab('expiration'); toggleMobileDrawer(false);">
+<div class="flex items-center gap-3"><span class="material-symbols-outlined">event_upcoming</span><span class="">ติดตามวันหมดอายุ</span></div>
+<span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="m-nav-medinfo" onclick="switchTab('medinfo'); toggleMobileDrawer(false);">
+<div class="flex items-center gap-3"><span class="material-symbols-outlined">verified_user</span><span class="">ข้อมูลยา &amp; ความปลอดภัย</span></div>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="m-nav-notifications" onclick="switchTab('notifications'); toggleMobileDrawer(false);">
+<div class="flex items-center gap-3"><span class="material-symbols-outlined">notifications</span><span class="">การแจ้งเตือน</span></div>
+<span class="mNotifBadge text-xs px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 font-bold">2</span>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="m-nav-profile" onclick="switchTab('profile'); toggleMobileDrawer(false);">
+<div class="flex items-center gap-3"><span class="material-symbols-outlined">group</span><span class="">โปรไฟล์ &amp; สมาชิก</span></div>
+</button>
+</nav>
+</div>
+<div class="p-4 border-t border-slate-100 bg-slate-50">
+<div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('profile'); toggleMobileDrawer(false);">
+<div class="w-9 h-9 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs shrink-0" id="mDrawerAvatar">สก</div>
+<div class="overflow-hidden">
+<p class="text-xs font-bold text-slate-900 truncate" id="mDrawerName">คุณสมชาย สุขวัฒน์</p>
+<p class="text-[11px] text-slate-500 truncate" id="mDrawerHouse">ครอบครัวสุขวัฒน์</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- MAIN BODY -->
+<div class="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto pb-20 md:pb-0">
+<!-- DESKTOP / IPAD SIDEBAR -->
+<aside class="w-64 h-full p-4 flex flex-col justify-between bg-white border-r border-slate-200 shrink-0 hidden md:flex z-20">
+<div class="space-y-4">
+<button class="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-xs hover:shadow transition active:scale-98" onclick="switchTab('addmedicine')">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="">+ บันทึกยาใหม่</span>
+</button>
+<nav class="space-y-1 text-sm font-medium" id="sideNav">
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-emerald-50 text-emerald-800 font-bold transition" id="nav-dashboard" onclick="switchTab('dashboard')">
+<div class="flex items-center gap-2.5"><span class="material-symbols-outlined">dashboard</span><span class="">หน้าหลัก</span></div>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="nav-cabinet" onclick="switchTab('cabinet')">
+<div class="flex items-center gap-2.5"><span class="material-symbols-outlined">medication</span><span class="">ตู้ยาของฉัน</span></div>
+<span class="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold" id="navCabinetCount">8</span>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="nav-addmedicine" onclick="switchTab('addmedicine')">
+<div class="flex items-center gap-2.5"><span class="material-symbols-outlined">add_circle</span><span class="">บันทึกยาใหม่</span></div>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">OCR</span>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="nav-expiration" onclick="switchTab('expiration')">
+<div class="flex items-center gap-2.5"><span class="material-symbols-outlined">event_upcoming</span><span class="">ติดตามวันหมดอายุ</span></div>
+<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="nav-medinfo" onclick="switchTab('medinfo')">
+<div class="flex items-center gap-2.5"><span class="material-symbols-outlined">verified_user</span><span class="">ข้อมูลยา &amp; ความปลอดภัย</span></div>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="nav-notifications" onclick="switchTab('notifications')">
+<div class="flex items-center gap-2.5"><span class="material-symbols-outlined">notifications</span><span class="">การแจ้งเตือน</span></div>
+<span class="text-xs px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 font-bold" id="sideNotifBadge">2</span>
+</button>
+<button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition" id="nav-profile" onclick="switchTab('profile')">
+<div class="flex items-center gap-2.5"><span class="material-symbols-outlined">group</span><span class="">โปรไฟล์ &amp; สมาชิก</span></div>
+</button>
+</nav>
+</div>
+<div class="pt-4 border-t border-slate-200">
+<div class="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl cursor-pointer border border-slate-200 flex items-center justify-between transition group" onclick="switchTab('profile')">
+<div class="flex items-center gap-2.5 overflow-hidden">
+<div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+<span class="material-symbols-outlined text-base">home</span>
+</div>
+<div class="truncate">
+<p class="text-xs font-bold text-slate-900 truncate" id="sideHouseholdName">ครอบครัวสุขวัฒน์</p>
+<p class="text-[11px] text-slate-500 truncate">ตู้ยาหลัก (ชั้น 1)</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-emerald-700 text-base">tune</span>
+</div>
+</div>
+</aside>
+<!-- CONTENT DISPLAY MAIN -->
+<main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 focus:outline-none" id="mainContainer">
+<!-- ========================================== -->
+<!-- TAB 1: DASHBOARD -->
+<!-- ========================================== -->
+<div class="view-pane active space-y-6" id="view-dashboard">
+<div class="rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-700 p-5 sm:p-6 text-white shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-medium mb-2 backdrop-blur-sm">
+<span class="material-symbols-outlined text-emerald-200 text-sm">health_and_safety</span>
+<span class="">สถานะตู้ยาห้องนั่งเล่น (ชั้น 1) • ปลอดภัยพร้อมใช้งาน</span>
+</div>
+<h1 class="text-xl sm:text-2xl font-bold">สวัสดี, <span class="" id="dashGreetingName">คุณสมชาย</span> 👋</h1>
+<p class="text-emerald-100 text-xs sm:text-sm mt-1 max-w-xl">ระบบตรวจสอบความปลอดภัยเรียบร้อย วันนี้มีรายการยาใกล้หมดอายุที่ควรตรวจสอบ <span class="" id="dashExpAlertCount">2</span> รายการ</p>
+</div>
+<div class="flex gap-2 w-full sm:w-auto">
+<button class="flex-1 sm:flex-none px-4 py-2.5 bg-white text-emerald-800 hover:bg-emerald-50 rounded-xl text-sm font-bold shadow-xs transition active:scale-95 text-center" onclick="switchTab('addmedicine')">
+              + บันทึกยาใหม่
+            </button>
+<button class="flex-1 sm:flex-none px-4 py-2.5 bg-black/25 hover:bg-black/35 text-white rounded-xl text-sm font-semibold backdrop-blur-sm transition active:scale-95 text-center" onclick="switchTab('expiration')">
+              ตรวจวันหมดอายุ
+            </button>
+</div>
+</div>
+<!-- 4 Stats Cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+<div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-sm hover:border-emerald-300 transition cursor-pointer" onclick="switchTab('cabinet')">
+<div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+<span class="">ยาทั้งหมดในตู้</span>
+<span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-700"><span class="material-symbols-outlined text-lg">medication</span></span>
+</div>
+<p class="text-xl sm:text-2xl font-bold text-slate-900 mt-2" id="statTotal">8 <span class="text-xs font-normal text-slate-500">รายการ</span></p>
+<p class="text-xs text-emerald-600 mt-1 flex items-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span> จัดเก็บเรียบร้อย</p>
+</div>
+<div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-sm hover:border-amber-300 transition cursor-pointer" onclick="switchTab('expiration'); filterExpBy('warning');">
+<div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+<span class="">ใกล้หมดอายุ (&lt; 90 วัน)</span>
+<span class="p-1.5 rounded-lg bg-amber-50 text-amber-700"><span class="material-symbols-outlined text-lg">notification_important</span></span>
+</div>
+<p class="text-xl sm:text-2xl font-bold text-amber-600 mt-2" id="statExpiring">2 <span class="text-xs font-normal text-slate-500">รายการ</span></p>
+<p class="text-xs text-amber-600 mt-1">ควรเตรียมเติมหรือใช้งาน</p>
+</div>
+<div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-sm hover:border-red-300 transition cursor-pointer" onclick="switchTab('expiration'); filterExpBy('expired');">
+<div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+<span class="">หมดอายุแล้ว</span>
+<span class="p-1.5 rounded-lg bg-red-50 text-red-700"><span class="material-symbols-outlined text-lg">dangerous</span></span>
+</div>
+<p class="text-xl sm:text-2xl font-bold text-red-600 mt-2" id="statExpired">1 <span class="text-xs font-normal text-slate-500">รายการ</span></p>
+<p class="text-xs text-red-600 mt-1 font-bold">คัดทิ้งทันที ห้ามทาน!</p>
+</div>
+<div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-sm hover:border-blue-300 transition cursor-pointer" onclick="switchTab('cabinet')">
+<div class="flex justify-between items-center text-slate-500 text-xs font-semibold">
+<span class="">ยาปลอดภัย (&gt; 6 เดือน)</span>
+<span class="p-1.5 rounded-lg bg-blue-50 text-blue-700"><span class="material-symbols-outlined text-lg">verified</span></span>
+</div>
+<p class="text-xl sm:text-2xl font-bold text-blue-700 mt-2" id="statSafe">5 <span class="text-xs font-normal text-slate-500">รายการ</span></p>
+<p class="text-xs text-blue-600 mt-1">สภาพสมบูรณ์ พร้อมใช้งาน</p>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+<div class="flex justify-between items-center">
+<h3 class="font-bold text-slate-900 flex items-center gap-2 text-sm sm:text-base">
+<span class="material-symbols-outlined text-red-600">assignment_late</span>
+                รายการยาที่ต้องตรวจสอบด่วน
+              </h3>
+<button class="text-xs text-emerald-700 font-bold hover:underline flex items-center gap-0.5" onclick="switchTab('expiration')">
+<span class="">ดูทั้งหมด</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="space-y-3" id="dashUrgentContainer"></div>
+</div>
+<div class="space-y-4">
+<div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 p-5 rounded-2xl">
+<div class="flex gap-3 items-start">
+<div class="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+<span class="material-symbols-outlined">call</span>
+</div>
+<div>
+<h4 class="font-bold text-amber-900 text-sm">สายด่วนศูนย์พิษวิทยา รพ.รามาฯ</h4>
+<p class="text-xs text-amber-800 mt-0.5">ปรึกษาเภสัชกรกรณีเผลอดื่มหรือกินยาผิด ตลอด 24 ชม.</p>
+<button class="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg transition" onclick="openMockCallModal('1367')">
+<span class="material-symbols-outlined text-sm">phone_in_talk</span>
+<span class="">โทร 1367 (ฉุกเฉิน)</span>
+</button>
+</div>
+</div>
+</div>
+<div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+<div class="flex justify-between items-center">
+<h4 class="font-bold text-slate-900 text-sm">หมวดหมู่ยาในตู้</h4>
+<button class="text-xs text-emerald-700 hover:underline" onclick="switchTab('cabinet')">จัดการตู้ยา</button>
+</div>
+<div class="space-y-2 text-xs" id="dashCatCounts"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- ========================================== -->
+<!-- TAB 2: MY MEDICINE CABINET -->
+<!-- ========================================== -->
+<div class="view-pane space-y-6" id="view-cabinet">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+<div>
+<h1 class="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600">medication</span>
+              ตู้ยาของฉัน (My Medicine Cabinet)
+            </h1>
+<p class="text-slate-500 text-xs sm:text-sm">ตรวจสอบสต็อกยา วันหมดอายุ และตำแหน่งจัดเก็บในบ้าน</p>
+</div>
+<button class="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow text-xs sm:text-sm transition flex items-center justify-center gap-1.5" onclick="switchTab('addmedicine')">
+<span class="material-symbols-outlined text-base">add_circle</span>
+<span class="">+ เพิ่มยาใหม่</span>
+</button>
+</div>
+<div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+<div class="flex flex-col md:flex-row gap-3">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 rounded-xl border border-slate-200 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none" id="cabSearch" oninput="filterCabinet()" placeholder="ค้นหาชื่อการค้า, ตัวยาสำคัญ, สรรพคุณ หรือที่เก็บ..." type="text">
+</div>
+<div class="flex gap-2">
+<select class="text-xs sm:text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 flex-1 md:flex-none" id="cabCategory" onchange="filterCabinet()">
+<option value="all">ทุกหมวดหมู่</option>
+<option value="แก้ปวดลดไข้">ยาแก้ปวดลดไข้</option>
+<option value="ทางเดินอาหาร">ทางเดินอาหาร</option>
+<option value="ยาแก้แพ้">ยาแก้แพ้ &amp; หวัด</option>
+<option value="ยาฆ่าเชื้อ">ยาฆ่าเชื้อ</option>
+<option value="ยาภายนอก">ยาใช้ภายนอก</option>
+</select>
+<select class="text-xs sm:text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 flex-1 md:flex-none" id="cabStatus" onchange="filterCabinet()">
+<option value="all">ทุกสถานะ</option>
+<option value="safe">🟢 ปลอดภัยดี</option>
+<option value="warning">🟡 ใกล้หมดอายุ</option>
+<option value="expired">🔴 หมดอายุแล้ว</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
+<button class="cab-cat-pill active px-3 py-1 rounded-full text-xs font-semibold bg-emerald-600 text-white shrink-0" onclick="setCabCatPill('all')">ทั้งหมด</button>
+<button class="cab-cat-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0" onclick="setCabCatPill('แก้ปวดลดไข้')">ยาแก้ปวดลดไข้</button>
+<button class="cab-cat-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0" onclick="setCabCatPill('ทางเดินอาหาร')">ทางเดินอาหาร</button>
+<button class="cab-cat-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0" onclick="setCabCatPill('ยาแก้แพ้')">ยาแก้แพ้ &amp; หวัด</button>
+<button class="cab-cat-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0" onclick="setCabCatPill('ยาฆ่าเชื้อ')">ยาฆ่าเชื้อ</button>
+<button class="cab-cat-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0" onclick="setCabCatPill('ยาภายนอก')">ยาภายนอก</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="cabinetGrid"></div>
+</div>
+<!-- ========================================== -->
+<!-- TAB 3: ADD MEDICINE (OCR & ALLERGIES) -->
+<!-- ========================================== -->
+<div class="view-pane space-y-6" id="view-addmedicine">
+<div>
+<h1 class="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600">add_circle</span>
+            บันทึกยาใหม่ (Add Medicine)
+          </h1>
+<p class="text-slate-500 text-xs sm:text-sm">บันทึกยาเข้าตู้ยา พร้อมระบบสแกนฉลากยา Smart OCR และตรวจประวัติแพ้ยาของสมาชิก</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<div class="lg:col-span-5 space-y-6">
+<div class="bg-white p-5 sm:p-6 rounded-2xl border-2 border-dashed border-emerald-400 text-center relative overflow-hidden">
+<div class="hidden absolute inset-0 bg-emerald-500/10 pointer-events-none z-10 flex items-center justify-center" id="ocrRadar">
+<span class="text-xs font-bold text-emerald-800 bg-white/90 px-3 py-1.5 rounded-full shadow animate-pulse">กำลังอ่านฉลากยา OCR...</span>
+</div>
+<div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+<span class="material-symbols-outlined text-3xl">document_scanner</span>
+</div>
+<h3 class="font-bold text-slate-900 text-sm">สแกนฉลากยาอัตโนมัติ (Smart OCR)</h3>
+<p class="text-xs text-slate-500 mt-1">แตะเพื่อจำลองการอ่านชื่อยา ขนาด และวันหมดอายุจากกล่องยาจริง</p>
+<div class="mt-4 flex flex-wrap gap-2 justify-center">
+<button class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition" onclick="runDemoOCR('paracetamol')" type="button">
+<span class="material-symbols-outlined text-base">auto_awesome</span>
+<span class="">สแกน Sara 500mg</span>
+</button>
+<button class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 flex items-center gap-1.5 transition" onclick="runDemoOCR('amoxy')" type="button">
+<span class="material-symbols-outlined text-base">warning</span>
+<span class="">ทดสอบสแกน Amoxy (จำลองแพ้ยา)</span>
+</button>
+</div>
+</div>
+<!-- Live Card Preview -->
+<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+<div class="flex justify-between items-center text-xs font-bold text-slate-400">
+<span class="">ตัวอย่างการ์ดยา (Live Preview)</span>
+<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700" id="prevBadge">🟢 ปลอดภัย</span>
+</div>
+<div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-xs text-emerald-700 font-bold" id="prevCat">ยาแก้ปวดลดไข้</span>
+<h4 class="font-bold text-slate-900 text-base" id="prevTrade">Paracetamol 500 mg</h4>
+<p class="text-xs text-slate-500" id="prevGeneric">Acetaminophen</p>
+</div>
+<span class="p-2 rounded-xl bg-white shadow-2xs text-emerald-600">
+<span class="material-symbols-outlined">medication</span>
+</span>
+</div>
+<div class="text-xs text-slate-600 space-y-1 pt-1 border-t border-slate-200">
+<p class="">คงเหลือ: <strong class="text-slate-900" id="prevQty">20 เม็ด</strong></p>
+<p class="">วันหมดอายุ: <strong class="text-slate-900" id="prevExp">2026-12-31</strong></p>
+<p class="">ที่เก็บ: <span class="" id="prevLoc">ตู้ยาห้องนั่งเล่น (ชั้น 1)</span></p>
+</div>
+<div class="hidden p-2.5 rounded-lg bg-red-100 border border-red-300 text-red-700 text-xs font-semibold" id="prevAllergyAlert">
+                  ⚠️ สมาชิกที่เลือกมีประวัติแพ้ยานี้! ตรวจสอบความปลอดภัยด่วน
+                </div>
+</div>
+</div>
+</div>
+<!-- Add Medicine Form -->
+<div class="lg:col-span-7 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs">
+<form class="space-y-4" id="addMedForm" onsubmit="saveMedicine(event)">
+<h3 class="font-bold text-slate-900 pb-2 border-b border-slate-100 text-base flex items-center justify-between">
+<span class="">กรอกข้อมูลยา</span>
+<span class="text-xs text-slate-400 font-normal">* จำเป็นต้องระบุ</span>
+</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">ชื่อการค้าบนกล่อง (Trade Name) *</label>
+<input class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:bg-white" id="inTrade" oninput="updateLivePreview()" required="" type="text" value="Paracetamol 500 mg">
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">ชื่อสามัญทางยา (Active Ingredient) *</label>
+<input class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:bg-white" id="inGeneric" oninput="updateLivePreview(); checkAllergyWarning();" required="" type="text" value="Acetaminophen">
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">หมวดหมู่ยา *</label>
+<select class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2" id="inCat" onchange="updateLivePreview()">
+<option value="แก้ปวดลดไข้">ยาแก้ปวดลดไข้</option>
+<option value="ทางเดินอาหาร">ยาระบบทางเดินอาหาร</option>
+<option value="ยาแก้แพ้">ยาแก้แพ้ &amp; หวัด</option>
+<option value="ยาฆ่าเชื้อ">ยาต้านจุลชีพ / ยาฆ่าเชื้อ</option>
+<option value="ยาภายนอก">ยาใช้ภายนอก / ทำแผล</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">รูปแบบยา</label>
+<select class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2" id="inForm" onchange="updateLivePreview()">
+<option value="เม็ด (Tablets)">ยาเม็ด (Tablets)</option>
+<option value="ยาน้ำ (Syrup)">ยาน้ำ (Syrup)</option>
+<option value="ยาทา (Cream/Gel)">ครีม / ขี้ผึ้งทาภายนอก</option>
+<option value="ซองละลายน้ำ (Sachet)">ผงเกลือแร่ / ซองชง</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">จำนวนคงเหลือ *</label>
+<input class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2" id="inQty" oninput="updateLivePreview()" required="" type="text" value="20 เม็ด">
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">วันหมดอายุ (EXP) *</label>
+<input class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2" id="inExp" oninput="updateLivePreview()" required="" type="date" value="2026-12-31">
+</div>
+<div class="sm:col-span-2">
+<label class="block text-xs font-bold text-slate-700 mb-1">สถานที่เก็บในบ้าน *</label>
+<select class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2" id="inLoc" onchange="updateLivePreview()">
+<option value="ตู้ยาห้องนั่งเล่น (ชั้น 1)">ตู้ยาห้องนั่งเล่น (ชั้น 1)</option>
+<option value="ตู้เย็นช่องปกติ (2-8°C)">ตู้เย็นช่องปกติ (2-8°C)</option>
+<option value="ห้องนอนใหญ่ (ชั้น 2)">ห้องนอนใหญ่ (ชั้น 2)</option>
+</select>
+</div>
+</div>
+<div class="pt-3 border-t border-slate-100">
+<div class="flex justify-between items-center mb-2">
+<span class="text-xs font-bold text-slate-700">สมาชิกที่ใช้ยานี้ &amp; ตรวจประวัติแพ้ยา</span>
+<button class="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1" onclick="openMemberModal()" type="button">
+<span class="material-symbols-outlined text-sm">settings</span>
+                    จัดการประวัติสมาชิก
+                  </button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs" id="memberCheckList"></div>
+<div class="hidden mt-3 p-3 bg-red-50 border-l-4 border-red-500 rounded-r-xl text-red-700 text-xs" id="allergyFormAlert">
+<strong>คำเตือนความปลอดภัย:</strong> พบสมาชิกที่เลือกมีประวัติแพ้ยาในกลุ่มนี้!
+                </div>
+</div>
+<div class="pt-4 flex justify-end gap-2">
+<button class="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50" onclick="switchTab('cabinet')" type="button">ยกเลิก</button>
+<button class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow transition active:scale-98" type="submit">
+                  บันทึกยาลงตู้ยา
+                </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+<!-- ========================================== -->
+<!-- TAB 4: EXPIRATION TRACKER -->
+<!-- ========================================== -->
+<div class="view-pane space-y-6" id="view-expiration">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+<div>
+<h1 class="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-600">event_upcoming</span>
+              ติดตามวันหมดอายุ (Expiration Tracker)
+            </h1>
+<p class="text-slate-500 text-xs sm:text-sm">คัดแยกและตรวจสอบวันหมดอายุ เพื่อความปลอดภัยของคนในครอบครัว</p>
+</div>
+<button class="w-full sm:w-auto px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 active:scale-95" onclick="discardAllExpired()">
+<span class="material-symbols-outlined text-base">delete_sweep</span>
+<span class="">คัดทิ้งยาทั้งหมดที่หมดอายุ</span>
+</button>
+</div>
+<div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+<div class="flex flex-wrap items-center justify-between gap-3">
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+<button class="exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-2xs" id="expBtn-all" onclick="filterExpBy('all')">ทั้งหมด (<span class="" id="expCnt-all">8</span>)</button>
+<button class="exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-red-50 hover:text-red-700" id="expBtn-expired" onclick="filterExpBy('expired')">🔴 หมดอายุแล้ว (<span class="" id="expCnt-expired">1</span>)</button>
+<button class="exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-amber-50 hover:text-amber-700" id="expBtn-warning" onclick="filterExpBy('warning')">🟡 ใกล้หมดอายุ (<span class="" id="expCnt-warning">2</span>)</button>
+<button class="exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700" id="expBtn-safe" onclick="filterExpBy('safe')">🟢 ปลอดภัย (<span class="" id="expCnt-safe">5</span>)</button>
+</div>
+<div class="text-xs text-slate-500 font-medium">
+              จัดเรียงตาม: <strong class="text-slate-700">วันหมดอายุก่อน-หลัง</strong>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm min-w-[620px]">
+<thead class="bg-slate-50 text-slate-600 text-xs border-b border-slate-200">
+<tr>
+<th class="p-3.5 pl-5">ชื่อยา &amp; ตัวยาสำคัญ</th>
+<th class="p-3.5">วันหมดอายุ</th>
+<th class="p-3.5">นับถอยหลัง / สถานะ</th>
+<th class="p-3.5">ตำแหน่งจัดเก็บ</th>
+<th class="p-3.5 pr-5 text-right">ดำเนินการ</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100" id="expTableBody"></tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- ========================================== -->
+<!-- TAB 5: MEDICINE INFORMATION -->
+<!-- ========================================== -->
+<div class="view-pane space-y-6" id="view-medinfo">
+<div>
+<h1 class="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600">verified_user</span>
+            ข้อมูลยา &amp; ความปลอดภัย (Medicine Info)
+          </h1>
+<p class="text-slate-500 text-xs sm:text-sm">คู่มือการใช้ยาสามัญประจำบ้าน วิธีคำนวณขนาดยาพาราเซตามอล และข้อห้ามใช้ที่สำคัญ</p>
+</div>
+<div class="bg-gradient-to-r from-emerald-700 to-teal-800 rounded-2xl p-5 text-white shadow-sm">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-xs font-semibold mb-1.5">
+<span class="material-symbols-outlined text-sm">calculate</span>
+<span class="">เครื่องคำนวณขนาดยาพาราเซตามอลตามน้ำหนักตัว</span>
+</div>
+<h3 class="text-lg font-bold">คำนวณขนาดยาแก้ปวดลดไข้ที่เหมาะสม</h3>
+<p class="text-xs text-emerald-100">ขนาดแนะนำคือ 10-15 มก./กก./ครั้ง ทุก 4-6 ชั่วโมง (ห้ามเกิน 4,000 มก./วัน ในผู้ใหญ่)</p>
+</div>
+<div class="bg-white/10 backdrop-blur-md p-3.5 rounded-xl border border-white/20 flex items-center gap-3 w-full md:w-auto">
+<div>
+<label class="block text-[11px] text-emerald-100">น้ำหนักตัว (กก.)</label>
+<input class="w-24 px-2 py-1 text-slate-900 font-bold text-sm rounded-lg bg-white border-0 focus:ring-2 focus:ring-emerald-400" id="calcWeight" max="150" min="5" oninput="calculateParaDosage()" type="number" value="50">
+</div>
+<div class="border-l border-white/30 pl-3">
+<span class="block text-[11px] text-emerald-100">ขนาดที่ควรทาน:</span>
+<span class="font-extrabold text-base text-yellow-300" id="calcResult">1 เม็ด (500 มก.)</span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+<div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-xs font-bold text-emerald-700 px-2 py-0.5 rounded-full bg-emerald-50">ยาสามัญประจำบ้าน</span>
+<h3 class="font-bold text-slate-900 text-base mt-1">พาราเซตามอล (Paracetamol)</h3>
+<p class="text-xs text-slate-500">500 มก. / เม็ด</p>
+</div>
+<span class="p-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs">Rx</span>
+</div>
+<div class="text-xs text-slate-700 space-y-1.5">
+<p class=""><strong>สรรพคุณ:</strong> บรรเทาอาการปวด ลดไข้</p>
+<p class=""><strong>ขนาดรับประทาน:</strong> ผู้ใหญ่ 1-2 เม็ด ทุก 4-6 ชม. เมื่อมีอาการ</p>
+<div class="p-2.5 rounded-lg bg-amber-50 text-amber-900 text-[11px] border border-amber-200">
+                ⚠️ ห้ามรับประทานเกิน 8 เม็ดต่อวัน และระวังการทานซ้ำซ้อนกับยาแก้หวัดสูตรผสม
+              </div>
+</div>
+</div>
+<div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-xs font-bold text-blue-700 px-2 py-0.5 rounded-full bg-blue-50">ยาแก้แพ้</span>
+<h3 class="font-bold text-slate-900 text-base mt-1">คลอร์เฟนิรามีน (CPM)</h3>
+<p class="text-xs text-slate-500">Chlorpheniramine 4 mg</p>
+</div>
+<span class="p-2 rounded-xl bg-blue-50 text-blue-700 font-bold text-xs">Rx</span>
+</div>
+<div class="text-xs text-slate-700 space-y-1.5">
+<p class=""><strong>สรรพคุณ:</strong> บรรเทาอาการแพ้ จาม น้ำมูกไหลจากหวัด</p>
+<p class=""><strong>ขนาดรับประทาน:</strong> ครั้งละ 1 เม็ด วันละ 3-4 ครั้ง</p>
+<div class="p-2.5 rounded-lg bg-red-50 text-red-900 text-[11px] border border-red-200">
+                ⚠️ ยานี้ทำให้ง่วงซึม ห้ามขับขี่ยานพาหนะหรือทำงานเกี่ยวกับเครื่องจักรกล
+              </div>
+</div>
+</div>
+<div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-3 shadow-2xs">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-xs font-bold text-emerald-700 px-2 py-0.5 rounded-full bg-emerald-50">เกลือแร่</span>
+<h3 class="font-bold text-slate-900 text-base mt-1">ผงเกลือแร่ชดเชยน้ำ (ORS)</h3>
+<p class="text-xs text-slate-500">Oral Rehydration Salts</p>
+</div>
+<span class="p-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs">Rx</span>
+</div>
+<div class="text-xs text-slate-700 space-y-1.5">
+<p class=""><strong>สรรพคุณ:</strong> ป้องกันภาวะขาดน้ำจากอาการท้องเสียหรืออาเจียน</p>
+<p class=""><strong>วิธีใช้:</strong> ละลายน้ำต้มสุกที่เย็นแล้ว จิบทีละน้อยตลอดวัน</p>
+<div class="p-2.5 rounded-lg bg-blue-50 text-blue-900 text-[11px] border border-blue-200">
+                ℹ️ สารละลายที่เหลือเกิน 24 ชั่วโมงต้องเททิ้ง ห้ามใช้ต่อ
+              </div>
+</div>
+</div>
+</div>
+</div>
+<!-- ========================================== -->
+<!-- TAB 6: NOTIFICATIONS -->
+<!-- ========================================== -->
+<div class="view-pane space-y-6" id="view-notifications">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+<div>
+<h1 class="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600">notifications</span>
+              การแจ้งเตือน (Notifications)
+            </h1>
+<p class="text-slate-500 text-xs sm:text-sm">ประวัติการแจ้งเตือนเรื่องวันหมดอายุและสต็อกยาในตู้</p>
+</div>
+<button class="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1" onclick="markAllNotificationsAsRead()">
+<span class="material-symbols-outlined text-sm">done_all</span>
+<span class="">ทำเครื่องหมายว่าอ่านแล้วทั้งหมด</span>
+</button>
+</div>
+<div class="space-y-3" id="notifListContainer"></div>
+</div>
+<!-- ========================================== -->
+<!-- TAB 7: PROFILE & HOUSEHOLD -->
+<!-- ========================================== -->
+<div class="view-pane space-y-6" id="view-profile">
+<div>
+<h1 class="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600">group</span>
+            โปรไฟล์ &amp; ข้อมูลสมาชิกตู้ยา (Profile &amp; Household)
+          </h1>
+<p class="text-slate-500 text-xs sm:text-sm">จัดการข้อมูลผู้ดูแลตู้ยา และประวัติการแพ้ยาของคนในครอบครัว</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<div class="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs text-center space-y-4">
+<div class="relative w-24 h-24 mx-auto">
+<div class="w-full h-full rounded-full bg-emerald-700 text-white text-3xl font-bold flex items-center justify-center overflow-hidden shadow" id="profCardAvatar">
+<span class="" id="profCardInitials">สก</span>
+</div>
+<button class="absolute bottom-0 right-0 p-1.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 shadow transition" onclick="openAvatarModal()" title="เปลี่ยนรูปโปรไฟล์">
+<span class="material-symbols-outlined text-base">photo_camera</span>
+</button>
+</div>
+<div>
+<h2 class="font-bold text-lg text-slate-900" id="profCardName">คุณสมชาย สุขวัฒน์</h2>
+<p class="text-xs text-slate-500" id="profCardEmail">somchai@homemed.th</p>
+<span class="inline-block mt-2 px-3 py-1 bg-emerald-50 text-emerald-800 rounded-full text-xs font-semibold">ผู้ดูแลหลักตู้ยา</span>
+</div>
+<button class="w-full py-2 bg-slate-50 hover:bg-slate-100 text-emerald-800 text-xs font-bold rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 transition" onclick="openAvatarModal()">
+<span class="material-symbols-outlined text-base">photo_camera</span>
+<span class="">เปลี่ยนรูปโปรไฟล์</span>
+</button>
+<div class="text-xs text-left pt-4 border-t border-slate-100 space-y-2 text-slate-600">
+<p class="flex justify-between"><span class="">ตู้ยาหลัก:</span> <strong class="text-slate-900" id="profCardHouse">ครอบครัวสุขวัฒน์</strong></p>
+<p class="flex justify-between"><span class="">เบอร์โทรฉุกเฉิน:</span> <strong class="text-slate-900" id="profCardPhone">089-123-4567</strong></p>
+<p class="flex justify-between"><span class="">สมาชิกในบ้าน:</span> <strong class="text-slate-900" id="profCardMemberCount">4 ท่าน</strong></p>
+</div>
+</div>
+<div class="lg:col-span-8 space-y-6">
+<div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+<h3 class="font-bold text-slate-900 text-base pb-2 border-b border-slate-100">ข้อมูลส่วนตัวผู้ดูแลตู้ยา</h3>
+<form class="grid grid-cols-1 sm:grid-cols-2 gap-3" onsubmit="saveProfile(event)">
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">ชื่อจริง</label>
+<input class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2" id="profInFirst" type="text" value="สมชาย">
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">นามสกุล</label>
+<input class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2" id="profInLast" type="text" value="สุขวัฒน์">
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">เบอร์โทรศัพท์</label>
+<input class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2" id="profInPhone" type="tel" value="089-123-4567">
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">อีเมล</label>
+<input class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2" id="profInEmail" type="email" value="somchai@homemed.th">
+</div>
+<div class="sm:col-span-2">
+<label class="block text-xs font-bold text-slate-700 mb-1">ชื่อบ้าน / ตู้ยาหลัก</label>
+<input class="w-full text-sm bg-slate-50 rounded-xl border border-slate-200 px-3 py-2" id="profInHouse" type="text" value="ครอบครัวสุขวัฒน์">
+</div>
+<div class="sm:col-span-2 flex justify-end">
+<button class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow transition active:scale-98" type="submit">
+                    บันทึกข้อมูลส่วนตัว
+                  </button>
+</div>
+</form>
+</div>
+<div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+<div class="flex justify-between items-center pb-2 border-b border-slate-100">
+<div>
+<h3 class="font-bold text-slate-900 text-base">สมาชิกในบ้าน &amp; ประวัติแพ้ยา</h3>
+<p class="text-xs text-slate-500">ระบบจะช่วยแจ้งเตือนทันทีเมื่อเพิ่มยาที่สมาชิกแพ้</p>
+</div>
+<button class="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold transition flex items-center gap-1" onclick="openMemberModal()">
+<span class="material-symbols-outlined text-sm">person_add</span>
+<span class="">+ จัดการสมาชิก</span>
+</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="profMembersGrid"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- MOBILE BOTTOM NAVIGATION (< 768px) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-[999] pointer-events-auto flex justify-around items-center px-1.5 py-1.5 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+<button class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-emerald-800 transition active:scale-95 touch-manipulation cursor-pointer" id="b-nav-dashboard" onclick="switchTab('dashboard')" type="button">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<span class="text-[10px] font-bold mt-0.5">หน้าหลัก</span>
+</button>
+<button class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 transition active:scale-95 touch-manipulation cursor-pointer" id="b-nav-cabinet" onclick="switchTab('cabinet')" type="button">
+<span class="material-symbols-outlined text-xl">medication</span>
+<span class="text-[10px] font-medium mt-0.5">ตู้ยา</span>
+</button>
+<button class="flex flex-col items-center justify-center -mt-4 transition active:scale-90 touch-manipulation cursor-pointer" id="b-nav-addmedicine" onclick="switchTab('addmedicine')" type="button">
+<div class="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg border-2 border-white" id="b-nav-add-icon">
+<span class="material-symbols-outlined text-2xl">add</span>
+</div>
+<span class="text-[10px] font-bold text-emerald-800 mt-0.5">เพิ่มยา</span>
+</button>
+<button class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 transition relative active:scale-95 touch-manipulation cursor-pointer" id="b-nav-expiration" onclick="switchTab('expiration')" type="button">
+<span class="material-symbols-outlined text-xl">event_upcoming</span>
+<span class="text-[10px] font-medium mt-0.5">หมดอายุ</span>
+<span class="w-2 h-2 rounded-full bg-red-500 absolute top-1 right-3"></span>
+</button>
+<button class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 transition active:scale-95 touch-manipulation cursor-pointer" id="b-nav-profile" onclick="switchTab('profile')" type="button">
+<span class="material-symbols-outlined text-xl">person</span>
+<span class="text-[10px] font-medium mt-0.5">โปรไฟล์</span>
+</button>
+</nav>
+<!-- MODAL: CHANGE AVATAR -->
+<div class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4" id="avatarModal">
+<div class="bg-white rounded-2xl border border-slate-200 max-w-sm w-full p-6 shadow-2xl space-y-4">
+<div class="flex justify-between items-center pb-2 border-b border-slate-100">
+<h3 class="font-bold text-slate-900 text-base flex items-center gap-1.5">
+<span class="material-symbols-outlined text-emerald-600">photo_camera</span>
+          เปลี่ยนรูปโปรไฟล์
+        </h3>
+<button class="text-slate-400 hover:text-slate-600 p-1" onclick="closeAvatarModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex flex-col items-center gap-2 py-2">
+<div class="w-20 h-20 rounded-full bg-emerald-700 text-white text-2xl font-bold flex items-center justify-center overflow-hidden shadow" id="modalAvatarPrev">
+<span class="" id="modalInitials">สก</span>
+</div>
+<p class="text-xs text-slate-400">รูปโปรไฟล์ปัจจุบัน</p>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1">อัปโหลดรูปภาพใหม่จากเครื่อง</label>
+<label class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-dashed border-emerald-500 cursor-pointer text-xs font-semibold text-slate-700 transition">
+<span class="material-symbols-outlined text-emerald-600">upload_file</span>
+<span class="">เลือกไฟล์รูปภาพ (PNG, JPG)</span>
+<input accept="image/*" class="hidden" onchange="handleAvatarFile(event)" type="file">
+</label>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1.5">หรือเลือกอวตารสำเร็จรูป</label>
+<div class="grid grid-cols-4 gap-2">
+<button class="w-12 h-12 mx-auto rounded-full bg-emerald-100 text-emerald-700 hover:scale-105 transition flex items-center justify-center" onclick="selectPreset('medic')">
+<span class="material-symbols-outlined">medical_services</span>
+</button>
+<button class="w-12 h-12 mx-auto rounded-full bg-blue-100 text-blue-700 hover:scale-105 transition flex items-center justify-center" onclick="selectPreset('face')">
+<span class="material-symbols-outlined">face</span>
+</button>
+<button class="w-12 h-12 mx-auto rounded-full bg-amber-100 text-amber-700 hover:scale-105 transition flex items-center justify-center" onclick="selectPreset('elder')">
+<span class="material-symbols-outlined">elderly</span>
+</button>
+<button class="w-12 h-12 mx-auto rounded-full bg-teal-100 text-teal-700 hover:scale-105 transition flex items-center justify-center" onclick="selectPreset('shield')">
+<span class="material-symbols-outlined">health_and_safety</span>
+</button>
+</div>
+</div>
+<div class="flex justify-between items-center pt-3 border-t border-slate-100">
+<button class="text-xs text-red-600 font-semibold hover:underline" onclick="resetAvatar()">รีเซ็ตเป็นชื่อย่อ</button>
+<button class="px-4 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700" onclick="closeAvatarModal()">เสร็จสิ้น</button>
+</div>
+</div>
+</div>
+<!-- MODAL: FAMILY & ALLERGIES -->
+<div class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4" id="memberModal">
+<div class="bg-white rounded-2xl border border-slate-200 max-w-lg w-full p-6 shadow-2xl space-y-4">
+<div class="flex justify-between items-center pb-2 border-b border-slate-100">
+<h3 class="font-bold text-slate-900 text-base flex items-center gap-1.5">
+<span class="material-symbols-outlined text-emerald-600">manage_accounts</span>
+          จัดการสมาชิก &amp; ประวัติแพ้ยา
+        </h3>
+<button class="text-slate-400 hover:text-slate-600 p-1" onclick="closeMemberModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+<p class="text-xs font-bold text-slate-800">เพิ่มสมาชิกใหม่ในบ้าน</p>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+<input class="bg-white rounded-lg border border-slate-200 px-2.5 py-1.5" id="newMemName" placeholder="ชื่อ เช่น คุณยาย สมร" type="text">
+<input class="bg-white rounded-lg border border-slate-200 px-2.5 py-1.5" id="newMemRel" placeholder="ความสัมพันธ์ เช่น คุณยาย" type="text">
+<input class="bg-white rounded-lg border border-slate-200 px-2.5 py-1.5" id="newMemAllergy" placeholder="ยาที่แพ้ เช่น Aspirin" type="text">
+</div>
+<div class="flex justify-end">
+<button class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition" onclick="addMember()">+ บันทึกสมาชิก</button>
+</div>
+</div>
+<div class="space-y-2 max-h-60 overflow-y-auto pr-1" id="memberModalList"></div>
+<div class="flex justify-end pt-2 border-t border-slate-100">
+<button class="px-4 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700" onclick="closeMemberModal()">เสร็จสิ้น</button>
+</div>
+</div>
+</div>
+<!-- MODAL: POISON CENTER CALL -->
+<div class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4" id="mockCallModal">
+<div class="bg-white rounded-2xl border border-slate-200 max-w-sm w-full p-6 text-center space-y-4">
+<div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto animate-pulse">
+<span class="material-symbols-outlined text-3xl">phone_in_talk</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 text-lg">กำลังเชื่อมต่อสายด่วน 1367</h3>
+<p class="text-xs text-slate-500 mt-1">ศูนย์พิษวิทยารามาธิบดี (Ramathibodi Poison Center)</p>
+</div>
+<div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-800 text-left space-y-1">
+<p class=""><strong>คำแนะนำระหว่างรอสาย:</strong></p>
+<p class="">1. เตรียมกล่องยาหรือซองยาที่ต้องสงสัย</p>
+<p class="">2. สังเกตอาการผู้ป่วย (เช่น หมดสติ, อาเจียน)</p>
+<p class="">3. ห้ามทำให้อาเจียนเองจนกว่าแพทย์จะสั่ง</p>
+</div>
+<div class="flex justify-center gap-2 pt-1">
+<button class="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition" onclick="closeMockCallModal()">
+          วางสาย (สิ้นสุดการโทร)
+        </button>
+</div>
+</div>
+</div>
+<!-- MODAL: LOGOUT -->
+<div class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4" id="logoutModal">
+<div class="bg-white rounded-2xl border border-slate-200 max-w-sm w-full p-6 text-center space-y-3">
+<div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+<span class="material-symbols-outlined text-2xl">logout</span>
+</div>
+<h3 class="font-bold text-slate-900 text-base">ต้องการออกจากระบบ?</h3>
+<p class="text-xs text-slate-500">ข้อมูลตู้ยาและประวัติแพ้ยาจะยังคงอยู่ในเครื่องนี้อย่างปลอดภัย</p>
+<div class="flex justify-center gap-2 pt-2">
+<button class="px-4 py-2 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl hover:bg-slate-50" onclick="closeLogoutModal()">ยกเลิก</button>
+<button class="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700" onclick="confirmLogout()">ออกจากระบบ</button>
+</div>
+</div>
+</div>
+<!-- TOAST -->
+<div class="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 transform transition-all duration-300 translate-y-20 opacity-0 bg-slate-900/95 text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-semibold flex items-center gap-2.5 backdrop-blur-xs border border-slate-700" id="toast">
+<span class="material-symbols-outlined text-emerald-400 text-lg" id="toastIcon">check_circle</span>
+<span class="" id="toastMsg">ดำเนินการสำเร็จ</span>
+</div>
+<!-- JAVASCRIPT APP LOGIC -->
+<script>
+    const DEF_PROFILE = {
+      firstName: "สมชาย",
+      lastName: "สุขวัฒน์",
+      phone: "089-123-4567",
+      email: "somchai@homemed.th",
+      house: "ครอบครัวสุขวัฒน์",
+      avatarType: "initials",
+      avatarData: ""
+    };
+
+    const DEF_MEMBERS = [
+      { id: "m1", name: "สมชาย (ตนเอง)", relation: "ผู้ดูแลหลัก", allergies: ["Sulfa", "Penicillin"] },
+      { id: "m2", name: "สมหญิง (ภรรยา)", relation: "ภรรยา", allergies: ["Ibuprofen"] },
+      { id: "m3", name: "น้องภูมิ (บุตร)", relation: "บุตรชาย", allergies: [] },
+      { id: "m4", name: "คุณยาย สมร", relation: "มารดา", allergies: ["Aspirin"] }
+    ];
+
+    const DEF_MEDICINES = [
+      { id: "med-1", trade: "Tylenol 500", generic: "Paracetamol", cat: "แก้ปวดลดไข้", form: "เม็ด (Tablets)", qty: "24 เม็ด", exp: "2026-08-15", loc: "ตู้ยาห้องนั่งเล่น (ชั้น 1)", status: "safe", members: ["ทุกคนในบ้าน"] },
+      { id: "med-2", trade: "Sara Suspension for Kids", generic: "Paracetamol 120mg", cat: "แก้ปวดลดไข้", form: "ยาน้ำ (Syrup)", qty: "1 ขวด (60ml)", exp: "2025-05-10", loc: "ตู้ยาห้องนั่งเล่น (ชั้น 1)", status: "warning", members: ["น้องภูมิ (บุตร)"] },
+      { id: "med-3", trade: "Amoxy 500 Capsule", generic: "Amoxicillin 500mg", cat: "ยาฆ่าเชื้อ", form: "เม็ด (Tablets)", qty: "10 แคปซูล", exp: "2024-11-20", loc: "ห้องนอนใหญ่ (ชั้น 2)", status: "expired", members: ["สมหญิง (ภรรยา)"] },
+      { id: "med-4", trade: "Air-X Mint", generic: "Simethicone 80mg", cat: "ทางเดินอาหาร", form: "เม็ด (Tablets)", qty: "16 เม็ด", exp: "2025-10-30", loc: "ตู้ยาห้องนั่งเล่น (ชั้น 1)", status: "safe", members: ["ทุกคนในบ้าน"] },
+      { id: "med-5", trade: "Gaviscon Dual Action", generic: "Sodium Alginate", cat: "ทางเดินอาหาร", form: "ยาน้ำ (Syrup)", qty: "4 ซอง", exp: "2025-04-20", loc: "ตู้ยาห้องนั่งเล่น (ชั้น 1)", status: "warning", members: ["สมชาย (ตนเอง)"] },
+      { id: "med-6", trade: "Zyrtec 10mg", generic: "Cetirizine HCl", cat: "ยาแก้แพ้", form: "เม็ด (Tablets)", qty: "10 เม็ด", exp: "2026-03-01", loc: "ห้องนอนใหญ่ (ชั้น 2)", status: "safe", members: ["สมชาย (ตนเอง)"] },
+      { id: "med-7", trade: "Royal-D เกลือแร่ ORS", generic: "Electrolyte Salts", cat: "ทางเดินอาหาร", form: "ซองละลายน้ำ (Sachet)", qty: "6 ซอง", exp: "2026-11-15", loc: "ตู้ยาห้องนั่งเล่น (ชั้น 1)", status: "safe", members: ["ทุกคนในบ้าน"] },
+      { id: "med-8", trade: "Betadine 10%", generic: "Povidone-Iodine 10%", cat: "ยาภายนอก", form: "ยาทา (Cream/Gel)", qty: "1 ขวด (15ml)", exp: "2026-07-20", loc: "ตู้ยาห้องนั่งเล่น (ชั้น 1)", status: "safe", members: ["ทุกคนในบ้าน"] }
+    ];
+
+    const DEF_NOTIFS = [
+      { id: "n1", text: "ยาหมดอายุแล้ว: Amoxy 500 Capsule กรุณาคัดทิ้งทันที", time: "2 วันที่แล้ว", read: false },
+      { id: "n2", text: "ยาใกล้หมดอายุ: Sara Suspension (พ.ค. 2568) กรุณาเตรียมจัดหา", time: "เมื่อวานนี้", read: false }
+    ];
+
+    let state = {
+      profile: JSON.parse(localStorage.getItem("mymed_prof")) || DEF_PROFILE,
+      members: JSON.parse(localStorage.getItem("mymed_mems")) || DEF_MEMBERS,
+      medicines: JSON.parse(localStorage.getItem("mymed_meds")) || DEF_MEDICINES,
+      notifs: JSON.parse(localStorage.getItem("mymed_notifs")) || DEF_NOTIFS,
+      expFilter: "all",
+      currentTab: "dashboard"
+    };
+
+    function saveState() {
+      localStorage.setItem("mymed_prof", JSON.stringify(state.profile));
+      localStorage.setItem("mymed_mems", JSON.stringify(state.members));
+      localStorage.setItem("mymed_meds", JSON.stringify(state.medicines));
+      localStorage.setItem("mymed_notifs", JSON.stringify(state.notifs));
+    }
+
+    function switchTab(tabId) {
+      // Map aliases for robust navigation from any trigger
+      let resolved = tabId;
+      if (tabId === "add") resolved = "addmedicine";
+      if (tabId === "expiry") resolved = "expiration";
+      if (tabId === "info") resolved = "medinfo";
+      state.currentTab = resolved;
+
+      // 1. Manage view panes
+      document.querySelectorAll(".view-pane").forEach(p => {
+        p.classList.remove("active");
+        p.style.display = "none";
+      });
+
+      const target = document.getElementById("view-" + resolved);
+      if (target) {
+        target.classList.add("active");
+        target.style.display = "block";
+      }
+
+      // 2. Desktop Sidebar active states
+      const desktopTabs = ["dashboard", "cabinet", "addmedicine", "expiration", "medinfo", "notifications", "profile"];
+      desktopTabs.forEach(t => {
+        const b = document.getElementById("nav-" + t);
+        if (b) {
+          b.className = t === resolved ? 
+            "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-emerald-50 text-emerald-800 font-bold transition" : 
+            "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition";
+        }
+        const mb = document.getElementById("m-nav-" + t);
+        if (mb) {
+          mb.className = t === resolved ? 
+            "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-emerald-50 text-emerald-800 font-bold transition" : 
+            "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition";
+        }
+      });
+
+      // 3. Mobile Bottom Navigation Bar active states
+      const bottomTabKeys = ["dashboard", "cabinet", "addmedicine", "expiration", "profile"];
+      bottomTabKeys.forEach(t => {
+        const btn = document.getElementById("b-nav-" + t);
+        if (btn) {
+          const isAct = (t === resolved);
+          if (t === "addmedicine") {
+            const addIcon = document.getElementById("b-nav-add-icon");
+            if (addIcon) {
+              addIcon.className = isAct ?
+                "w-12 h-12 rounded-full bg-emerald-700 text-white flex items-center justify-center shadow-lg border-2 border-emerald-300 ring-2 ring-emerald-500 scale-105" :
+                "w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg border-2 border-white";
+            }
+            btn.className = "flex flex-col items-center justify-center -mt-4 transition active:scale-90 touch-manipulation cursor-pointer";
+          } else {
+            btn.className = isAct ?
+              "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-emerald-800 font-bold transition active:scale-95 touch-manipulation cursor-pointer" :
+              "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 font-medium transition active:scale-95 touch-manipulation cursor-pointer";
+          }
+        }
+      });
+
+      // 4. Scroll smoothly to top
+      const main = document.getElementById("mainContainer");
+      if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      toggleMobileDrawer(false);
+      refreshUI();
+    }
+
+    function toggleMobileDrawer(open) {
+      const drawer = document.getElementById("mobileDrawer");
+      const backdrop = document.getElementById("mobileDrawerBackdrop");
+      if (open) {
+        backdrop.classList.remove("opacity-0", "pointer-events-none");
+        backdrop.classList.add("opacity-100");
+        drawer.classList.remove("-translate-x-full");
+      } else {
+        backdrop.classList.remove("opacity-100");
+        backdrop.classList.add("opacity-0", "pointer-events-none");
+        drawer.classList.add("-translate-x-full");
+      }
+    }
+
+    function toggleUserDropdown(e) {
+      if (e) e.stopPropagation();
+      document.getElementById("userDropdown").classList.toggle("hidden");
+    }
+    function closeDropdown() {
+      document.getElementById("userDropdown").classList.add("hidden");
+    }
+    document.addEventListener("click", (e) => {
+      const btn = document.getElementById("userMenuBtn");
+      const dd = document.getElementById("userDropdown");
+      if (btn && dd && !btn.contains(e.target) && !dd.contains(e.target)) {
+        dd.classList.add("hidden");
+      }
+    });
+
+    function renderAvatar(element, type, data, initials) {
+      if (!element) return;
+      element.innerHTML = "";
+      if (type === "image" && data) {
+        const img = document.createElement("img");
+        img.src = data;
+        img.className = "w-full h-full object-cover rounded-full";
+        element.appendChild(img);
+      } else if (type === "preset" && data) {
+        const sp = document.createElement("span");
+        sp.className = "material-symbols-outlined text-lg";
+        if (data === "medic") sp.textContent = "medical_services";
+        else if (data === "face") sp.textContent = "face";
+        else if (data === "elder") sp.textContent = "elderly";
+        else sp.textContent = "health_and_safety";
+        element.appendChild(sp);
+      } else {
+        const sp = document.createElement("span");
+        sp.textContent = initials;
+        element.appendChild(sp);
+      }
+    }
+
+    function refreshUI() {
+      const p = state.profile;
+      const inits = (p.firstName.charAt(0) + (p.lastName ? p.lastName.charAt(0) : "")).toUpperCase();
+
+      document.getElementById("hdrName").textContent = `${p.firstName} ${p.lastName.charAt(0)}.`;
+      document.getElementById("ddFullName").textContent = `คุณ${p.firstName} ${p.lastName}`;
+      document.getElementById("ddEmail").textContent = p.email;
+      document.getElementById("dashGreetingName").textContent = `คุณ${p.firstName}`;
+
+      document.getElementById("profCardName").textContent = `คุณ${p.firstName} ${p.lastName}`;
+      document.getElementById("profCardEmail").textContent = p.email;
+      document.getElementById("profCardHouse").textContent = p.house;
+      document.getElementById("sideHouseholdName").textContent = p.house;
+      document.getElementById("profCardPhone").textContent = p.phone;
+      document.getElementById("profCardMemberCount").textContent = `${state.members.length} ท่าน`;
+
+      document.getElementById("mDrawerName").textContent = `คุณ${p.firstName} ${p.lastName}`;
+      document.getElementById("mDrawerHouse").textContent = p.house;
+
+      document.getElementById("profInFirst").value = p.firstName;
+      document.getElementById("profInLast").value = p.lastName;
+      document.getElementById("profInPhone").value = p.phone;
+      document.getElementById("profInEmail").value = p.email;
+      document.getElementById("profInHouse").value = p.house;
+
+      renderAvatar(document.getElementById("hdrAvatar"), p.avatarType, p.avatarData, inits);
+      renderAvatar(document.getElementById("ddAvatar"), p.avatarType, p.avatarData, inits);
+      renderAvatar(document.getElementById("profCardAvatar"), p.avatarType, p.avatarData, inits);
+      renderAvatar(document.getElementById("modalAvatarPrev"), p.avatarType, p.avatarData, inits);
+      renderAvatar(document.getElementById("mDrawerAvatar"), p.avatarType, p.avatarData, inits);
+
+      const now = new Date();
+      state.medicines.forEach(m => {
+        const expDate = new Date(m.exp);
+        const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 0) m.status = "expired";
+        else if (diffDays <= 90) m.status = "warning";
+        else m.status = "safe";
+      });
+
+      const total = state.medicines.length;
+      const expired = state.medicines.filter(m => m.status === "expired").length;
+      const warning = state.medicines.filter(m => m.status === "warning").length;
+      const safe = state.medicines.filter(m => m.status === "safe").length;
+
+      document.getElementById("statTotal").innerHTML = `${total} <span class="text-xs font-normal text-slate-500">รายการ</span>`;
+      document.getElementById("statExpiring").innerHTML = `${warning} <span class="text-xs font-normal text-slate-500">รายการ</span>`;
+      document.getElementById("statExpired").innerHTML = `${expired} <span class="text-xs font-normal text-slate-500">รายการ</span>`;
+      document.getElementById("statSafe").innerHTML = `${safe} <span class="text-xs font-normal text-slate-500">รายการ</span>`;
+      
+      document.getElementById("dashExpAlertCount").textContent = expired + warning;
+      document.getElementById("navCabinetCount").textContent = total;
+      document.querySelectorAll(".mCabinetCount").forEach(el => el.textContent = total);
+
+      document.getElementById("expCnt-all").textContent = total;
+      document.getElementById("expCnt-expired").textContent = expired;
+      document.getElementById("expCnt-warning").textContent = warning;
+      document.getElementById("expCnt-safe").textContent = safe;
+
+      const hdrPill = document.getElementById("hdrStatusPill");
+      if (expired > 0) {
+        hdrPill.textContent = `ตู้ยา: มี ${expired} รายการหมดอายุ`;
+        hdrPill.parentElement.className = "hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-xs font-semibold text-red-800 shadow-2xs";
+      } else if (warning > 0) {
+        hdrPill.textContent = `ตู้ยา: ใกล้หมดอายุ ${warning} รายการ`;
+        hdrPill.parentElement.className = "hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800 shadow-2xs";
+      } else {
+        hdrPill.textContent = "ตู้ยาหลัก: ปลอดภัยดี";
+        hdrPill.parentElement.className = "hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800 shadow-2xs";
+      }
+
+      renderCabinet();
+      renderDashboardUrgent();
+      renderDashboardCatBreakdown();
+      renderExpiration();
+      renderNotifications();
+      renderProfileMembers();
+      renderAddMedMembers();
+    }
+
+    function renderCabinet() {
+      const grid = document.getElementById("cabinetGrid");
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      const q = (document.getElementById("cabSearch")?.value || "").toLowerCase().trim();
+      const cat = document.getElementById("cabCategory")?.value || "all";
+      const st = document.getElementById("cabStatus")?.value || "all";
+
+      const filtered = state.medicines.filter(m => {
+        const mText = (m.trade + " " + m.generic + " " + m.loc + " " + m.cat).toLowerCase();
+        const matchQ = !q || mText.includes(q);
+        const matchCat = cat === "all" || m.cat === cat;
+        const matchSt = st === "all" || m.status === st;
+        return matchQ && matchCat && matchSt;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-12 bg-white rounded-2xl border border-slate-200">
+            <span class="material-symbols-outlined text-4xl text-slate-300">search_off</span>
+            <p class="mt-2 text-slate-500 font-semibold text-sm">ไม่พบรายการยาที่ค้นหา</p>
+            <button onclick="resetCabFilters()" class="mt-3 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold hover:bg-emerald-100">ล้างตัวกรอง</button>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(m => {
+        let stBadge = `<span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">🟢 ปลอดภัย</span>`;
+        if (m.status === "warning") stBadge = `<span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold">🟡 ใกล้หมดอายุ</span>`;
+        if (m.status === "expired") stBadge = `<span class="px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-[10px] font-bold">🔴 หมดอายุ</span>`;
+
+        const div = document.createElement("div");
+        div.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow hover:border-emerald-300 transition flex flex-col justify-between space-y-3";
+        div.innerHTML = `
+          <div>
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[11px] font-bold text-emerald-700 px-2 py-0.5 rounded-md bg-emerald-50">${m.cat}</span>
+                <h4 class="font-bold text-slate-900 text-sm mt-1.5">${m.trade}</h4>
+                <p class="text-xs text-slate-500">${m.generic}</p>
+              </div>
+              ${stBadge}
+            </div>
+            <div class="mt-3 text-xs text-slate-600 space-y-1 bg-slate-50/60 p-2.5 rounded-xl border border-slate-100">
+              <p>คงเหลือ: <strong class="text-slate-800">${m.qty}</strong> (${m.form})</p>
+              <p>วันหมดอายุ: <strong class="text-slate-800">${m.exp}</strong></p>
+              <p class="truncate">ที่เก็บ: ${m.loc}</p>
+            </div>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-100 text-xs">
+            <span class="text-[11px] text-slate-400 truncate max-w-[150px]">สำหรับ: ${m.members.join(', ')}</span>
+            <button onclick="deleteMedicine('${m.id}')" class="text-xs text-red-600 hover:text-red-700 font-bold px-2 py-1 rounded-lg hover:bg-red-50 transition">คัดทิ้ง</button>
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function filterCabinet() { renderCabinet(); }
+
+    function setCabCatPill(cat) {
+      document.querySelectorAll(".cab-cat-pill").forEach(p => {
+        p.classList.remove("active", "bg-emerald-600", "text-white");
+        p.classList.add("bg-slate-100", "text-slate-700");
+      });
+      event.target.classList.add("active", "bg-emerald-600", "text-white");
+      event.target.classList.remove("bg-slate-100", "text-slate-700");
+      document.getElementById("cabCategory").value = cat;
+      filterCabinet();
+    }
+
+    function resetCabFilters() {
+      document.getElementById("cabSearch").value = "";
+      document.getElementById("cabCategory").value = "all";
+      document.getElementById("cabStatus").value = "all";
+      setCabCatPill('all');
+      renderCabinet();
+    }
+
+    function handleTopSearch(val) {
+      document.getElementById("cabSearch").value = val;
+      switchTab("cabinet");
+      filterCabinet();
+    }
+
+    function deleteMedicine(id) {
+      state.medicines = state.medicines.filter(m => m.id !== id);
+      saveState();
+      refreshUI();
+      showToast("คัดทิ้งรายการยาเรียบร้อยแล้ว");
+    }
+
+    function renderDashboardUrgent() {
+      const c = document.getElementById("dashUrgentContainer");
+      if (!c) return;
+      c.innerHTML = "";
+      const urgents = state.medicines.filter(m => m.status === "expired" || m.status === "warning");
+      if (urgents.length === 0) {
+        c.innerHTML = `
+          <div class="p-4 bg-emerald-50 rounded-xl text-emerald-800 text-xs flex items-center gap-2 border border-emerald-200">
+            <span class="material-symbols-outlined text-emerald-600">verified</span>
+            <span>ยอดเยี่ยม! ยาทั้งหมดในตู้ยาอยู่ในเกณฑ์ปลอดภัย ยังไม่มีรายการหมดอายุ</span>
+          </div>`;
+        return;
+      }
+      urgents.forEach(m => {
+        const isExp = m.status === "expired";
+        const div = document.createElement("div");
+        div.className = `p-3.5 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 ${isExp ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`;
+        div.innerHTML = `
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold ${isExp ? 'text-red-700' : 'text-amber-800'}">${m.trade}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${isExp ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-900'}">
+                ${isExp ? 'หมดอายุแล้ว' : 'ใกล้หมดอายุ'}
+              </span>
+            </div>
+            <p class="text-xs text-slate-600 mt-0.5">หมดอายุ: <strong>${m.exp}</strong> • ที่เก็บ: ${m.loc}</p>
+          </div>
+          <button onclick="deleteMedicine('${m.id}')" class="px-3 py-1 rounded-lg text-xs font-bold ${isExp ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-white border border-amber-300 text-amber-900 hover:bg-amber-100'} transition">
+            ${isExp ? 'คัดทิ้งทันที' : 'ตรวจสอบ'}
+          </button>
+        `;
+        c.appendChild(div);
+      });
+    }
+
+    function renderDashboardCatBreakdown() {
+      const c = document.getElementById("dashCatCounts");
+      if (!c) return;
+      const cats = [
+        { name: "ยาแก้ปวดลดไข้", key: "แก้ปวดลดไข้" },
+        { name: "ยาระบบทางเดินอาหาร", key: "ทางเดินอาหาร" },
+        { name: "ยาแก้แพ้ & หวัด", key: "ยาแก้แพ้" },
+        { name: "ยาฆ่าเชื้อ & ภายนอก", key: "ยาฆ่าเชื้อ" }
+      ];
+      c.innerHTML = cats.map(cat => {
+        const count = state.medicines.filter(m => m.cat.includes(cat.key) || cat.key.includes(m.cat)).length;
+        return `
+          <div class="flex justify-between py-1 border-b border-slate-100 last:border-0">
+            <span class="text-slate-600">${cat.name}</span>
+            <span class="font-bold text-slate-900">${count} รายการ</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterExpBy(type) {
+      state.expFilter = type;
+      document.querySelectorAll(".exp-filter-btn").forEach(btn => {
+        btn.className = "exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+      });
+      const actBtn = document.getElementById("expBtn-" + type);
+      if (actBtn) actBtn.className = "exp-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-2xs transition";
+      renderExpiration();
+    }
+
+    function renderExpiration() {
+      const tb = document.getElementById("expTableBody");
+      if (!tb) return;
+      tb.innerHTML = "";
+
+      let items = [...state.medicines];
+      items.sort((a, b) => new Date(a.exp) - new Date(b.exp));
+
+      if (state.expFilter !== "all") items = items.filter(m => m.status === state.expFilter);
+
+      if (items.length === 0) {
+        tb.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 text-sm">ไม่พบรายการยาในเงื่อนไขนี้</td></tr>`;
+        return;
+      }
+
+      const now = new Date();
+      items.forEach(m => {
+        const expDate = new Date(m.exp);
+        const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+
+        let pill = `<span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">🟢 ปลอดภัย (${diffDays} วัน)</span>`;
+        if (m.status === "warning") pill = `<span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-bold">🟡 อีก ${diffDays} วัน</span>`;
+        if (m.status === "expired") pill = `<span class="px-2.5 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-bold">🔴 เลยมา ${Math.abs(diffDays)} วัน</span>`;
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50/70 transition";
+        tr.innerHTML = `
+          <td class="p-3.5 pl-5">
+            <p class="font-bold text-slate-900">${m.trade}</p>
+            <p class="text-xs text-slate-500">${m.generic} (${m.form})</p>
+          </td>
+          <td class="p-3.5 font-semibold text-slate-700">${m.exp}</td>
+          <td class="p-3.5">${pill}</td>
+          <td class="p-3.5 text-xs text-slate-600">${m.loc}</td>
+          <td class="p-3.5 pr-5 text-right">
+            <button onclick="deleteMedicine('${m.id}')" class="px-2.5 py-1 text-xs text-red-600 hover:text-white hover:bg-red-600 rounded-lg font-bold border border-red-200 transition">คัดทิ้ง</button>
+          </td>
+        `;
+        tb.appendChild(tr);
+      });
+    }
+
+    function discardAllExpired() {
+      const expCount = state.medicines.filter(m => m.status === "expired").length;
+      if (expCount === 0) {
+        showToast("ไม่มียาที่หมดอายุในระบบ");
+        return;
+      }
+      state.medicines = state.medicines.filter(m => m.status !== "expired");
+      saveState();
+      refreshUI();
+      showToast(`คัดทิ้งยาหมดอายุเรียบร้อยแล้ว (${expCount} รายการ)`);
+    }
+
+    function renderNotifications() {
+      const c = document.getElementById("notifListContainer");
+      if (!c) return;
+      c.innerHTML = "";
+      state.notifs.forEach(n => {
+        const div = document.createElement("div");
+        div.className = `p-4 rounded-xl border flex justify-between items-center ${n.read ? 'bg-white border-slate-200' : 'bg-emerald-50/60 border-emerald-200'}`;
+        div.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined ${n.read ? 'text-slate-400' : 'text-emerald-600'}">notifications</span>
+            <div>
+              <p class="text-xs font-bold text-slate-800">${n.text}</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">${n.time}</p>
+            </div>
+          </div>
+          ${!n.read ? '<span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>' : ''}
+        `;
+        c.appendChild(div);
+      });
+      const unread = state.notifs.filter(n => !n.read).length;
+      document.getElementById("notifBadge").textContent = unread;
+      document.getElementById("sideNotifBadge").textContent = unread;
+      document.querySelectorAll(".mNotifBadge").forEach(el => el.textContent = unread);
+    }
+
+    function markAllNotificationsAsRead() {
+      state.notifs.forEach(n => n.read = true);
+      saveState();
+      refreshUI();
+      showToast("ทำเครื่องหมายว่าอ่านแล้วทั้งหมด");
+    }
+
+    function runDemoOCR(type) {
+      const radar = document.getElementById("ocrRadar");
+      radar.classList.remove("hidden");
+
+      setTimeout(() => {
+        radar.classList.add("hidden");
+
+        if (type === 'amoxy') {
+          document.getElementById("inTrade").value = "Amoxycillin 500mg";
+          document.getElementById("inGeneric").value = "Amoxicillin / Penicillin Group";
+          document.getElementById("inCat").value = "ยาฆ่าเชื้อ";
+          document.getElementById("inForm").value = "เม็ด (Tablets)";
+          document.getElementById("inQty").value = "10 แคปซูล";
+          document.getElementById("inExp").value = "2026-11-20";
+        } else {
+          document.getElementById("inTrade").value = "Sara Paracetamol 500mg";
+          document.getElementById("inGeneric").value = "Acetaminophen";
+          document.getElementById("inCat").value = "แก้ปวดลดไข้";
+          document.getElementById("inForm").value = "เม็ด (Tablets)";
+          document.getElementById("inQty").value = "10 เม็ด (1 แผง)";
+          document.getElementById("inExp").value = "2026-10-15";
+        }
+
+        updateLivePreview();
+        checkAllergyWarning();
+        showToast("Smart OCR: จำลองสแกนฉลากยาสำเร็จ");
+      }, 700);
+    }
+
+    function updateLivePreview() {
+      document.getElementById("prevTrade").textContent = document.getElementById("inTrade").value || "-";
+      document.getElementById("prevGeneric").textContent = document.getElementById("inGeneric").value || "-";
+      document.getElementById("prevCat").textContent = document.getElementById("inCat").value || "-";
+      document.getElementById("prevQty").textContent = document.getElementById("inQty").value || "-";
+      document.getElementById("prevExp").textContent = document.getElementById("inExp").value || "-";
+      document.getElementById("prevLoc").textContent = document.getElementById("inLoc").value || "-";
+    }
+
+    function renderAddMedMembers() {
+      const c = document.getElementById("memberCheckList");
+      if (!c) return;
+      c.innerHTML = "";
+      state.members.forEach((m, idx) => {
+        const div = document.createElement("label");
+        div.className = "flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition";
+        div.innerHTML = `
+          <input type="checkbox" name="medMember" value="${m.name}" ${idx === 0 ? 'checked' : ''} onchange="checkAllergyWarning()" class="rounded text-emerald-600 focus:ring-emerald-500">
+          <span class="font-medium text-slate-800 text-xs">${m.name}</span>
+          ${m.allergies.length > 0 ? `<span class="text-[10px] text-red-600 ml-auto font-bold">(แพ้: ${m.allergies.join(',')})</span>` : ''}
+        `;
+        c.appendChild(div);
+      });
+    }
+
+    function checkAllergyWarning() {
+      const activeGeneric = (document.getElementById("inGeneric").value || "").toLowerCase().trim();
+      const checkboxes = document.querySelectorAll('input[name="medMember"]:checked');
+      let foundAllergy = false;
+
+      checkboxes.forEach(cb => {
+        const member = state.members.find(m => m.name === cb.value);
+        if (member && member.allergies) {
+          member.allergies.forEach(all => {
+            if (activeGeneric && (activeGeneric.includes(all.toLowerCase()) || all.toLowerCase().includes(activeGeneric))) {
+              foundAllergy = true;
+            }
+          });
+        }
+      });
+
+      const formAlert = document.getElementById("allergyFormAlert");
+      const prevAlert = document.getElementById("prevAllergyAlert");
+      if (foundAllergy) {
+        formAlert.classList.remove("hidden");
+        prevAlert.classList.remove("hidden");
+      } else {
+        formAlert.classList.add("hidden");
+        prevAlert.classList.add("hidden");
+      }
+    }
+
+    function saveMedicine(e) {
+      e.preventDefault();
+      const trade = document.getElementById("inTrade").value.trim();
+      const generic = document.getElementById("inGeneric").value.trim();
+      const cat = document.getElementById("inCat").value;
+      const form = document.getElementById("inForm").value;
+      const qty = document.getElementById("inQty").value.trim();
+      const exp = document.getElementById("inExp").value;
+      const loc = document.getElementById("inLoc").value;
+      const checkedMems = Array.from(document.querySelectorAll('input[name="medMember"]:checked')).map(cb => cb.value);
+
+      const now = new Date();
+      const expDate = new Date(exp);
+      const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+      let status = "safe";
+      if (diffDays <= 0) status = "expired";
+      else if (diffDays <= 90) status = "warning";
+
+      const newMed = {
+        id: "med-" + Date.now(),
+        trade, generic, cat, form, qty, exp, loc,
+        status,
+        members: checkedMems.length ? checkedMems : ["ทุกคนในบ้าน"]
+      };
+
+      state.medicines.unshift(newMed);
+      saveState();
+      refreshUI();
+      showToast("บันทึกยาลงตู้ยาเรียบร้อยแล้ว");
+      switchTab("cabinet");
+    }
+
+    function renderProfileMembers() {
+      const c = document.getElementById("profMembersGrid");
+      if (!c) return;
+      c.innerHTML = "";
+      state.members.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1";
+        div.innerHTML = `
+          <div class="flex justify-between items-center">
+            <strong class="text-xs text-slate-900">${m.name}</strong>
+            <span class="text-[11px] text-slate-500">${m.relation}</span>
+          </div>
+          <div class="text-[11px] text-slate-600">
+            ${m.allergies.length > 0 ? 
+              `<span class="text-red-600 font-bold">⚠️ แพ้ยา: ${m.allergies.join(', ')}</span>` : 
+              `<span class="text-emerald-700">✓ ไม่พบประวัติแพ้ยา</span>`}
+          </div>
+        `;
+        c.appendChild(div);
+      });
+    }
+
+    function saveProfile(e) {
+      e.preventDefault();
+      state.profile.firstName = document.getElementById("profInFirst").value.trim();
+      state.profile.lastName = document.getElementById("profInLast").value.trim();
+      state.profile.phone = document.getElementById("profInPhone").value.trim();
+      state.profile.email = document.getElementById("profInEmail").value.trim();
+      state.profile.house = document.getElementById("profInHouse").value.trim();
+
+      saveState();
+      refreshUI();
+      showToast("บันทึกข้อมูลส่วนตัวเรียบร้อย");
+    }
+
+    function openMemberModal() {
+      renderMemberModalList();
+      document.getElementById("memberModal").classList.remove("hidden");
+    }
+    function closeMemberModal() {
+      document.getElementById("memberModal").classList.add("hidden");
+      refreshUI();
+    }
+
+    function renderMemberModalList() {
+      const c = document.getElementById("memberModalList");
+      if (!c) return;
+      c.innerHTML = "";
+      state.members.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "p-2.5 bg-white border border-slate-200 rounded-xl flex justify-between items-center text-xs";
+        div.innerHTML = `
+          <div>
+            <strong class="text-slate-900">${m.name}</strong> (${m.relation})
+            <p class="text-slate-500 text-[11px]">ยาที่แพ้: ${m.allergies.length ? m.allergies.join(', ') : 'ไม่มี'}</p>
+          </div>
+          <button onclick="removeMember('${m.id}')" class="text-red-600 hover:text-red-700 text-xs font-bold p-1">ลบ</button>
+        `;
+        c.appendChild(div);
+      });
+    }
+
+    function addMember() {
+      const name = document.getElementById("newMemName").value.trim();
+      const rel = document.getElementById("newMemRel").value.trim();
+      const allergy = document.getElementById("newMemAllergy").value.trim();
+      if (!name) return;
+      state.members.push({
+        id: "m-" + Date.now(),
+        name,
+        relation: rel || "สมาชิก",
+        allergies: allergy ? allergy.split(',').map(s => s.trim()) : []
+      });
+      document.getElementById("newMemName").value = "";
+      document.getElementById("newMemRel").value = "";
+      document.getElementById("newMemAllergy").value = "";
+      saveState();
+      renderMemberModalList();
+      refreshUI();
+      showToast("เพิ่มสมาชิกเรียบร้อยแล้ว");
+    }
+
+    function removeMember(id) {
+      if (state.members.length <= 1) {
+        showToast("ต้องมีสมาชิกอย่างน้อย 1 ท่าน");
+        return;
+      }
+      state.members = state.members.filter(m => m.id !== id);
+      saveState();
+      renderMemberModalList();
+      refreshUI();
+    }
+
+    function openAvatarModal() { document.getElementById("avatarModal").classList.remove("hidden"); }
+    function closeAvatarModal() { document.getElementById("avatarModal").classList.add("hidden"); }
+
+    function handleAvatarFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        state.profile.avatarType = "image";
+        state.profile.avatarData = evt.target.result;
+        saveState();
+        refreshUI();
+        showToast("เปลี่ยนรูปโปรไฟล์เรียบร้อยแล้ว");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function selectPreset(type) {
+      state.profile.avatarType = "preset";
+      state.profile.avatarData = type;
+      saveState();
+      refreshUI();
+      showToast("เลือกอวตารสำเร็จ");
+    }
+
+    function resetAvatar() {
+      state.profile.avatarType = "initials";
+      state.profile.avatarData = "";
+      saveState();
+      refreshUI();
+      showToast("รีเซ็ตรูปโปรไฟล์เรียบร้อย");
+    }
+
+    function openMockCallModal(num) { document.getElementById("mockCallModal").classList.remove("hidden"); }
+    function closeMockCallModal() { document.getElementById("mockCallModal").classList.add("hidden"); }
+
+    function openLogoutModal() { document.getElementById("logoutModal").classList.remove("hidden"); }
+    function closeLogoutModal() { document.getElementById("logoutModal").classList.add("hidden"); }
+    function confirmLogout() {
+      closeLogoutModal();
+      showToast("จำลองออกจากระบบเรียบร้อย");
+    }
+
+    function calculateParaDosage() {
+      const w = parseFloat(document.getElementById("calcWeight").value) || 0;
+      const res = document.getElementById("calcResult");
+      if (w <= 0) { res.textContent = "-"; return; }
+      if (w < 12) res.textContent = "ควรปรึกษาแพทย์ (ยาน้ำสำหรับทารก)";
+      else if (w <= 16) res.textContent = "ยาน้ำ 1 ช้อนชา (250 มก.)";
+      else if (w <= 24) res.textContent = "ยาน้ำ 1.5 ช้อนชา";
+      else if (w <= 34) res.textContent = "1/2 เม็ด (250 มก.)";
+      else if (w <= 67) res.textContent = "1 เม็ด (500 มก.)";
+      else res.textContent = "1.5 เม็ด (750 มก.)";
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      document.getElementById("toastMsg").textContent = msg;
+      t.classList.remove("translate-y-20", "opacity-0");
+      setTimeout(() => {
+        t.classList.add("translate-y-20", "opacity-0");
+      }, 2500);
+    }
+
+    // INIT APP
+    window.addEventListener("DOMContentLoaded", () => {
+      refreshUI();
+      calculateParaDosage();
+    });
+  </script>
+
+
+</body></html>
